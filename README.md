@@ -1,5 +1,3 @@
-Impact-Site-Verification: ce56a5f2-369f-4ccf-8d0d-1dac40c6f4fd
-
 ## Shibiko AI ComfyUI Tools
 
 ### What is this?
