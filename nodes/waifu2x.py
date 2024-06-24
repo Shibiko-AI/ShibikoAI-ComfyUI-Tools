@@ -1,10 +1,9 @@
 import torch
-import numpy as np
-from PIL import Image
 from typing import Optional
+from ..utils.convert import convert
 
 
-class ShibikoAI_Waifu2x:
+class Waifu2x:
     @classmethod
     def INPUT_TYPES(self):
         return {
@@ -75,21 +74,6 @@ class ShibikoAI_Waifu2x:
                 setattr(self, key, value)
 
     @staticmethod
-    def convert(image):
-        if isinstance(image, Image.Image):
-            img_array = np.array(image)
-            img_tensor = torch.from_numpy(img_array).float() / 255.
-            if img_tensor.ndim == 3 and img_tensor.shape[-1] == 3:
-                img_tensor = img_tensor.permute(2, 0, 1)
-            image = img_tensor.unsqueeze(0).permute(0, 2, 3, 1)
-
-        elif isinstance(image, torch.Tensor):
-            img_array = image.squeeze(0).cpu().numpy() * 255.0
-            image = Image.fromarray(np.clip(img_array, 0, 255).astype(np.uint8))
-
-        return image
-
-    @staticmethod
     def waifu2x_method(scale, noise_level):
         if noise_level < 0 and scale <= 1:
             return None
@@ -118,7 +102,7 @@ class ShibikoAI_Waifu2x:
         if self.model_type != model_type:
             self.load(model_type)
 
-        image = self.convert(image)
+        image = convert(image)
         scale = scale if scale is not None else self.scale
         noise_level = noise_level if noise_level is not None else self.noise_level
 
@@ -126,7 +110,7 @@ class ShibikoAI_Waifu2x:
             self.method = self.waifu2x_method(scale, noise_level)
             self.model.set_mode(self.method, noise_level)
         image = self.model.infer(image, method=self.method, noise_level=noise_level, output_type='pil')
-        image = self.convert(image)
+        image = convert(image)
         return (image,)
 
     # @classmethod
@@ -138,5 +122,5 @@ class ShibikoAI_Waifu2x:
     #     return validate_path(video, allow_none=True)
 
 
-NODE_CLASS_MAPPINGS = {"Shibiko AI Waifu2X": ShibikoAI_Waifu2x}
-NODE_DISPLAY_NAME_MAPPINGS = {"Shibiko AI Waifu2x": "Shibiko AI Waifu2X"}
+NODE_CLASS_MAPPINGS = {"Waifu2x": Waifu2x}
+NODE_DISPLAY_NAME_MAPPINGS = {"Waifu2x": "Shibiko AI - Waifu2X"}
