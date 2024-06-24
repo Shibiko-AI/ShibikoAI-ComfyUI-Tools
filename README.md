@@ -1,7 +1,7 @@
 ## Shibiko AI ComfyUI Tools
 
 ### What is this?
-This is a collection of tools that I use to make my life easier when developing ComfyUI applications. It is a collection of tools that I have created to help me with my development process. I have decided to share these tools with the community in the hopes that they will be useful to others as well. I use this tools to further develop features for https://shibiko.ai
+This is a collection of tools that I use to make my life easier when developing ComfyUI applications. Waifu2x to reduce noise and upscale 2x and 4x trained on art or phones. Luts used in the photo and film industry to recolor images. I use this tools to further develop features for [Shibiko AI](https://shibiko.ai)
 
 ### Notes
 I put in credits for the original creators of the underlining tools that I use to create nodes. So links in each section are for each creator, repo, and patreon if they have one.
