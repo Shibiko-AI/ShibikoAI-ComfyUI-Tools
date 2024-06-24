@@ -13,8 +13,12 @@ Credits: [Nagadomi](https://github.com/nagadomi) |
 [GitHub](https://github.com/nagadomi/nunif) |
 [Pateron](https://patreon.com/nagadomi)
 
+![waifu2x-preview](https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools/assets/5192788/b690bc79-f377-4ef8-8f6c-d468fcdb0894)
+
 ### Luts
 I wrote this using built in methods from the PIL library and converting the image types. This comes straight from production code I use in [Shibiko AI](https://shibiko.ai).
 If you have any issues, please check to make sure that you have a luts directory in the models directory with luts in it.
 
 Default Luts come from [on1.com](https://www.on1.com/free/luts/all-luts/) selected a few of the free ones to use in this tool. Please go to the site and check out the rest of the free luts.
+
+![luts-preview](https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools/assets/5192788/5e564dde-f8b4-40cb-ae4f-6c26603ff0ca)
