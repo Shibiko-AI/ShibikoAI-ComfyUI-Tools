@@ -12,3 +12,6 @@ This tool is a simple wrapper around the waifu2x command line tool. It allows yo
 Credits: [Nagadomi](https://github.com/nagadomi) |
 [GitHub](https://github.com/nagadomi/nunif) |
 [Pateron](https://patreon.com/nagadomi)
+
+### Luts
+I wrote this using built in methods from the PIL library and converting the image types. This comes straight from production code I use in [Shibiko AI](https://shibiko.ai).
