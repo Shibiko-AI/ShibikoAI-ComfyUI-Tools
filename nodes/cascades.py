@@ -106,8 +106,12 @@ class Cascade:
 
         if blur is not None:
             if blur_type == 'gaussian':
+                blur = blur if blur % 2 == 1 else blur + 1
+                dilation = dilation if dilation % 2 == 1 else dilation + 1
                 mask = cv2.GaussianBlur(mask, (blur, blur), 0)
             elif blur_type == 'median':
+                blur = blur if blur % 2 == 1 else blur + 1
+                dilation = dilation if dilation % 2 == 1 else dilation + 1
                 mask = cv2.medianBlur(mask, blur)
             elif blur_type == 'box':
                 mask = cv2.blur(mask, (blur, blur))
