@@ -36,8 +36,8 @@ class Cascade:
 
     CATEGORY = "Shibiko"
 
-    RETURN_TYPES = ("IMAGE", "MASK", "LIST")
-    RETURN_NAMES = ("IMAGE", "MASK", "LIST")
+    RETURN_TYPES = ("IMAGE", "MASK", "BBOX")
+    RETURN_NAMES = ("image", "mask", "bbox")
 
     FUNCTION = "__call__"
 
