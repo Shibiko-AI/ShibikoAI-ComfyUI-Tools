@@ -1,28 +1,16 @@
 import os
-import shutil
 from PIL import ImageFilter
 from typing import List, Union
 from ..utils.convert import convert
+from ..utils.directory import initialize_directory
 
 
 class Luts:
+    luts_directory = initialize_directory('luts')
+    
     @classmethod
     def INPUT_TYPES(self):
-        base_directory = self.get_models_dir()
-        luts_directory = os.path.join(base_directory, 'luts')
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        source_directory = os.path.join(script_dir, '..', 'assets', 'luts')
-
-        if not (os.path.exists(luts_directory) and os.path.isdir(luts_directory)):
-            os.makedirs(luts_directory)
-            # Copy files from source_directory to luts_directory
-            for filename in os.listdir(source_directory):
-                src_file = os.path.join(source_directory, filename)
-                dst_file = os.path.join(luts_directory, filename)
-                if os.path.isfile(src_file):
-                    shutil.copy(src_file, dst_file)
-
-        luts = [lut.split(".")[0] for lut in os.listdir(luts_directory) if lut.endswith(".cube")]
+        luts = [lut.split(".")[0] for lut in os.listdir(self.luts_directory) if lut.endswith(".cube")]
 
         return {
             "required": {
@@ -42,16 +30,13 @@ class Luts:
 
     FUNCTION = "__call__"
 
-    def __init__(self, **kwargs):
-        pass
-
     def apply_lut(self, image, lut):
         print("Applying LUT...")
-        base_directory = self.get_models_dir()
         if not lut.endswith(".cube"):
             lut += ".cube"
         lut_file_name = lut
-        lut_path = os.path.join(base_directory, 'luts', f"{lut_file_name}")
+        lut_directory = initialize_directory('luts')
+        lut_path = os.path.join(lut_directory, f"{lut_file_name}")
         lut = self.read_lut(lut_path)
 
         if isinstance(image, list):
@@ -72,24 +57,6 @@ class Luts:
         ]
 
         return ImageFilter.Color3DLUT(size, lut_table, num_channels)
-
-    @staticmethod
-    def get_models_dir():
-        current_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-
-        while True:
-            # Check if "ComfyUI/models" exists in the current path
-            target_path = os.path.join(current_path, "ComfyUI", "models")
-            if os.path.isdir(target_path):
-                return os.path.abspath(target_path)
-
-            # Move up one directory level
-            new_path = os.path.dirname(current_path)
-            if new_path == current_path:
-                break
-            current_path = new_path
-
-        return None
 
     @staticmethod
     def is_3dlut_row(row: List) -> bool:
