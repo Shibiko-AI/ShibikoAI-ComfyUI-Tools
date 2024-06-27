@@ -17,7 +17,7 @@ Credits: [Nagadomi](https://github.com/nagadomi) |
 
 ### Luts
 I wrote this using built in methods from the PIL library and converting the image types. This comes straight from production code I use in [Shibiko AI](https://shibiko.ai).
-If you have any issues, please check to make sure that you have a luts directory in the models directory with luts in it.
+If you have any issues, please check to make sure that you have a luts directory in the models directory with luts in it. A luts directory is auto created in the models directory where you can add your own luts.
 
 Default Luts come from [on1.com](https://www.on1.com/free/luts/all-luts/) selected a few of the free ones to use in this tool. Please go to the site and check out the rest of the free luts.
 
@@ -25,6 +25,6 @@ Default Luts come from [on1.com](https://www.on1.com/free/luts/all-luts/) select
 
 ### Cascades
 Wrote this to include the opencv cascades that are built in. I also include a cascade made by [Nagadomi](https://github.com/nagadomi) that you can find here: [lbpcascade_animeface](https://github.com/nagadomi/lbpcascade_animeface)
-We can use this to detect faces, eyes, and anime faces without needing yolo. Yolo has an AGPL license, meaning you can't use it commerically unless you purchase a yearly license. Works well for characters and people that are facing towards the front. You can use this as an alternate way for inpainting or in combination with other masking techniques.
+We can use this to detect faces, eyes, and anime faces without needing yolo. Yolo has an AGPL license, meaning you can't use it commerically unless you purchase a yearly license. Works well for characters and people that are facing towards the front. You can use this as an alternate way for inpainting or in combination with other masking techniques. A cascades directory is auto created in the models directory where you can add your own cascades.
 
 ![cascade-preview](https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools/assets/5192788/d1afccb5-3b35-4c4a-90aa-04e4849986d1)
