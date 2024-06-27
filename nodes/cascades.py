@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import re
 import os
 import torch
 from typing import Optional
@@ -12,7 +13,7 @@ class Cascade:
     @classmethod
     def INPUT_TYPES(cls):
         cascades = [cascade.split(".")[0] for cascade in os.listdir(cls.cascades_directory) if cascade.endswith(".xml")]
-        embedded = [cascade.split(".")[0] for cascade in os.listdir(cv2.data.haarcascades) if cascade.endswith(".xml")]
+        embedded = [re.sub(r'haarcascade_|.xml', '', cascade) for cascade in os.listdir(cv2.data.haarcascades) if cascade.endswith(".xml")]
 
         cascades.extend(embedded)
         cascades.sort()
@@ -23,9 +24,10 @@ class Cascade:
             },
             "optional": {
                 "cascade": (cascades, {"default": 'frontalface_default'}),
-                "blur": ("INT", {"default": 25, "min": 0, "max": 100, "step": 1},),
-                "blur_type": (["gaussian", "median", "box"], {"default": "gaussian"}),
-                "padding": ("INT", {"default": 50, "min": 0, "step": 1},),
+                "blur": ("INT", {"default": 32, "min": 0, "max": 100, "step": 1},),
+                "blur_type": (["gaussian", "median", "box"], {"default": "box"}),
+                "dilation": ("INT", {"default": 4, "min": 0, "step": 1},),
+                "padding": ("INT", {"default": 4, "min": 0, "step": 1},),
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID"
@@ -53,8 +55,8 @@ class Cascade:
         self.cascade = cascade
         self.cascades_directory = initialize_directory('cascades')
 
-        if os.path.exists(self.cascades_directory):
-            cascade_path = os.path.join(self.cascades_directory, f'{cascade}.xml')
+        cascade_path = os.path.join(self.cascades_directory, f'{cascade}.xml')
+        if os.path.exists(self.cascades_directory) and os.path.exists(cascade_path):
             self.haar_cascade_face = cv2.CascadeClassifier(cascade_path)
         elif cv2.data.haarcascades not in cascade and 'haarcascade_' not in cascade:
             cascade_path = os.path.join(cv2.data.haarcascades, f'haarcascade_{cascade}.xml')
@@ -88,7 +90,7 @@ class Cascade:
 
         return self.image
 
-    def mask(self, blur=25, blur_type='gaussian', padding: Optional[int] = None):
+    def mask(self, blur=25, blur_type='gaussian', dilation=4, padding: Optional[int] = None):
         if self.bbox is None or self.image is None:
             raise ValueError('Cascades or image not detected')
 
@@ -112,7 +114,10 @@ class Cascade:
             else:
                 pass
 
-        return self.CV2_to_NHWC(mask, cv2.COLOR_BGR2GRAY)
+        kernel = np.ones((dilation, dilation), np.uint8)
+        mask_dilated = cv2.dilate(mask, kernel, iterations=1)
+
+        return self.CV2_to_NHWC(mask_dilated, cv2.COLOR_BGR2GRAY)
 
     @staticmethod
     def NHWC_to_CV2(image):
@@ -131,18 +136,26 @@ class Cascade:
 
         return image_tensor
 
-    def __call__(self, image, blur=25, blur_type='gaussian', cascade='frontalface_default', padding=50, unique_id=None):
+    def __call__(
+        self,
+        image,
+        blur=25,
+        blur_type='gaussian',
+        cascade='frontalface_default',
+        dilation=4,
+        padding=50,
+        unique_id=None
+    ):
         if cascade != self.cascade:
             self.load(cascade)
 
         image = self.NHWC_to_CV2(image)
         self.detect(image)
         self.draw(image, padding)
-        mask = self.mask(blur, blur_type, padding)
+        mask = self.mask(blur, blur_type, dilation, padding)
 
         return self.CV2_to_NHWC(self.image), mask, self.bbox
 
 
 NODE_CLASS_MAPPINGS = {"Cascade": Cascade}
 NODE_DISPLAY_NAME_MAPPINGS = {"Cascade": "Shibiko AI - Cascade Detection"}
-
