@@ -7,7 +7,7 @@ class Code:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "code": ("STRING", {"forceInput": True, "multiline": True, "dynamicPrompts": True}),
+                "code": ("STRING", {"forceInput": True, "multiline": True, }),
             },
             "optional": {
                 "lang": (["python", "json"], {"default": "python"},),
@@ -16,6 +16,10 @@ class Code:
         }
 
     CATEGORY = "Shibiko"
+    COLOR = "#FFA800"
+    DESCRIPTION = ("Designed to work with AnyNode by extracting the function code from the control output. "
+                   "Will prettify the code. However, you can have this work with any JSON object or string."
+                   " JSON object must be a string.")
 
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("code",)

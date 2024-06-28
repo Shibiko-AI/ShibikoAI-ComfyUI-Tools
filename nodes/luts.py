@@ -22,7 +22,7 @@ class Luts:
     CATEGORY = "Shibiko"
 
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
 
     FUNCTION = "__call__"
 
