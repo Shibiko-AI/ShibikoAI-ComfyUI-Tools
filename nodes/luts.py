@@ -17,10 +17,6 @@ class Luts:
                 "image": ("IMAGE",),
                 "lut": (luts, {"default": 'Cinematic'}),
             },
-            "optional": {},
-            "hidden": {
-                "unique_id": "UNIQUE_ID"
-            },
         }
 
     CATEGORY = "Shibiko"
