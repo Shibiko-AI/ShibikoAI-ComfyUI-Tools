@@ -1,3 +1,4 @@
+from server import PromptServer
 from functools import reduce
 import json
 
@@ -13,6 +14,9 @@ class Code:
                 "lang": (["python", "json"], {"default": "python"},),
                 "key": ("STRING", {"default": "function"},),
             },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            }
         }
 
     CATEGORY = "Shibiko"
@@ -27,26 +31,27 @@ class Code:
     FUNCTION = "__call__"
 
     def __init__(self):
-        self.code = None
-        self.key = None
-        self.lang = None
+        pass
 
     @staticmethod
     def get_from_dict(data_dict, map_list):
         return reduce(lambda d, k: d.get(k) if d else None, map_list, data_dict)
 
-    def __call__(
-        self,
-        code="",
-        lang='python',
-        key=None,
-    ):
+    @staticmethod
+    def send_code(code, id, lang="python"):
+        PromptServer.instance.send_sync("code", { "code": code, "id": id, "lang": lang })
+
+    @classmethod
+    def IS_CHANGED(cls, code, lang, key, unique_id):
+        return cls.__call__(code, lang, key, unique_id)
+
+    def __call__(self, code="", lang='python', key=None, unique_id=None):
         if key is not None:
-            self.key = key
             key_list = key.split(".")
             code_dict = json.loads(code)
-            return (self.get_from_dict(code_dict, key_list),)
+            code = self.get_from_dict(code_dict, key_list)
 
+        self.send_code(code, unique_id, lang)
         return (code,)
 
 
