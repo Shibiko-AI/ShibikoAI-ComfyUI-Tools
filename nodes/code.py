@@ -41,9 +41,18 @@ class Code:
     def send_code(code, id, lang="python"):
         PromptServer.instance.send_sync("code", { "code": code, "id": id, "lang": lang })
 
-    @classmethod
-    def IS_CHANGED(cls, code, lang, key, unique_id):
-        return cls.__call__(code, lang, key, unique_id)
+    # @classmethod
+    # def IS_CHANGED(cls, code, lang, key, unique_id):
+    #     return cls.__call__(code, lang, key, unique_id)
+
+    # @classmethod
+    # def VALIDATE_INPUTS(cls, code, lang, key, unique_id):
+    #     try:
+    #         print('Validating inputs')
+    #         # cls.__call__(code, lang, key, unique_id)
+    #     except:
+    #         return False, "Invalid inputs."
+    #     return True, None
 
     def __call__(self, code="", lang='python', key=None, unique_id=None):
         if key is not None:
