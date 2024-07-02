@@ -1,68 +1,55 @@
 from server import PromptServer
-from functools import reduce
 import json
 
 
-class Code:
+class AnyNodeShowCode:
     @classmethod
     def INPUT_TYPES(cls):
         return {
             "required": {
-                "code": ("STRING", {"forceInput": True, "multiline": True, }),
+                "control": ["CTRL"],
             },
             "optional": {
-                "lang": (["python", "json"], {"default": "python"},),
-                "key": ("STRING", {"default": "function"},),
+                "show": [["code", "response"], {"default": "code"}],
             },
             "hidden": {
                 "unique_id": "UNIQUE_ID",
             }
         }
 
-    CATEGORY = "Shibiko"
+    CATEGORY = "utils"
     COLOR = "#FFA800"
     DESCRIPTION = ("Designed to work with AnyNode by extracting the function code from the control output. "
                    "Will prettify the code. However, you can have this work with any JSON object or string."
                    " JSON object must be a string.")
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("code",)
+    OUTPUT_NODE = True
+    RETURN_TYPES = ()
 
     FUNCTION = "__call__"
 
-    def __init__(self):
-        pass
-
     @staticmethod
-    def get_from_dict(data_dict, map_list):
-        return reduce(lambda d, k: d.get(k) if d else None, map_list, data_dict)
+    def send_code(code: str, language: str, unique_id: int):
+        event = dict(
+            code=code,
+            language=language,
+            unique_id=unique_id
+        )
+        PromptServer.instance.send_sync(f"any-node-show-code-{unique_id}", event)
 
-    @staticmethod
-    def send_code(code, id, lang="python"):
-        PromptServer.instance.send_sync("code", { "code": code, "id": id, "lang": lang })
+    def __call__(self, control: dict, show: str, unique_id: int):
+        code = "# Waiting for code..."
+        language = "python"
 
-    # @classmethod
-    # def IS_CHANGED(cls, code, lang, key, unique_id):
-    #     return cls.__call__(code, lang, key, unique_id)
+        if show == 'code' or show is None:
+            code = control.get("function", "# Waiting for code...")
+        else:
+            code = json.dumps(control, indent=4)
+            language = "json"
 
-    # @classmethod
-    # def VALIDATE_INPUTS(cls, code, lang, key, unique_id):
-    #     try:
-    #         print('Validating inputs')
-    #         # cls.__call__(code, lang, key, unique_id)
-    #     except:
-    #         return False, "Invalid inputs."
-    #     return True, None
-
-    def __call__(self, code="", lang='python', key=None, unique_id=None):
-        if key is not None:
-            key_list = key.split(".")
-            code_dict = json.loads(code)
-            code = self.get_from_dict(code_dict, key_list)
-
-        self.send_code(code, unique_id, lang)
-        return (code,)
+        self.send_code(code, language, unique_id)
+        return []
 
 
-NODE_CLASS_MAPPINGS = {"Code": Code}
-NODE_DISPLAY_NAME_MAPPINGS = {"Code": "Shibiko AI - Code"}
+NODE_CLASS_MAPPINGS = {"AnyNodeShowCode": AnyNodeShowCode}
+NODE_DISPLAY_NAME_MAPPINGS = {"AnyNodeShowCode": "Any Node 🍄 (Show Code)"}

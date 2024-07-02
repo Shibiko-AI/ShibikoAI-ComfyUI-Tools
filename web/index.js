@@ -120,81 +120,61 @@ Promise.all([
       } catch (e) {}
     }
 
-    app.registerNodeDef('Code', {
-      name: 'Code',
-      category: 'Shibiko',
-      color: '#FFA800',
-      input: {
-        required: {
-          code: ['STRING', { 'forceInput': true, 'multiline': true }],
-        },
-        optional: {
-          lang: ['STRING', { default: 'python' }],
-          key: ['STRING', { default: 'function' }],
-        }
-      },
-      output: {
-        code: ['STRING'],
-      }
-    });
-
     app.registerExtension({
-      name: 'ShibikoCodeDisplay',
-      async beforeRegisterNodeDef(type) {
-        if (type.comfyClass === 'Code') {
-          const orig_nodeCreated = type.prototype.onNodeCreated;
-          type.prototype.onNodeCreated = function (node) {
-            let widget = {
-              type: 'CODEBLOCK',
-              name: 'CODEBLOCK',
-              draw(ctx, node, widget_width, y) {
-                Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1])); // assign the required style when we are drawn
-              },
+      name: 'AnyNodeShowCode',
+      async sleep (ms=0) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      },
+      async nodeCreated(node, app) {
+        await this.sleep(0);
+        if (node.type === 'AnyNodeShowCode') {
+          let widget = {
+            type: 'CODE',
+            name: 'CODE',
+            draw(ctx, node, widget_width, y) {
+              Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1])); // assign the required style when we are drawn
+            },
+          };
+
+          const create_code_widget = (code = '# Waiting for code...', language = 'python', id = 0) => {
+            widget.html = $el('section', { className: 'get-position-style' });
+            const preBlock = $el('pre', {});
+            const innerHTML = hljs.highlight(code, { language }).value;
+            const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
+            preBlock.appendChild(codeBlock);
+            widget.html.appendChild(preBlock);
+            document.body.appendChild(widget.html);
+
+            node.addCustomWidget(widget);
+            highlight();
+
+            node.onRemoved = function () {
+              widget.html.remove();
             };
 
-            const create_code_widget = (code = '# Waiting for code...', language = 'python', id = '') => {
-              widget.html = $el('section', { className: 'get-position-style' });
-              const preBlock = $el('pre', {});
-              const innerHTML = hljs.highlight(code, { language }).value;
-              const codeBlock = $el('code', { id: `code-${id}`, className: 'language-python', innerHTML });
-              preBlock.appendChild(codeBlock);
-              widget.html.appendChild(preBlock);
-              document.body.appendChild(widget.html);
+            return widget;
+          };
 
-              this.addCustomWidget(widget);
-              highlight();
+          const update_code_widget = (code = '# Waiting for code...', language = 'python', id = 0) => {
+            const el = document.getElementById(`any-node-show-code-${id}`);
+            // There are no script injection vulnerabilities here, hljs
+            el.innerHTML = hljs.highlight(code + '\n\n', { language }).value;
+            highlight();
+          };
 
-              this.onRemoved = function () {
-                widget.html.remove();
-              };
+          loadHljsCSS();
 
-              return widget;
-            };
+          api.addEventListener(`any-node-show-code-${node.id}`, (event) => {
+            console.log('API EVENT', event);
+            const { code, language, unique_id } = event.detail;
+            update_code_widget(code, language, unique_id);
+          });
 
-            const update_code_widget = (code = '# Waiting for code...', language = 'python', id = 0) => {
-              const el = document.getElementById(`code-${id}`);
-              // There are no script injection vulnerabilities here, hljs
-              el.innerHTML = hljs.highlight(code + '\n\n', { language }).value;
-              highlight();
-            };
+          let code = '# Waiting for code...';
+          let language = 'python';
+          widget = create_code_widget(code, language, node.id);
 
-            orig_nodeCreated?.apply(this, arguments);
-            loadHljsCSS();
-
-            api.addEventListener('code', (event) => {
-              console.log('API EVENT', event);
-              const { code, id, lang } = event.detail;
-              update_code_widget(code, lang, 0);
-            });
-
-            let code = '# Waiting for code...';
-            let lang = 'python';
-            widget = create_code_widget(code, lang, 0);
-
-            this.serialize_widgets = false;
-          }
-
-          const orig_onExecuted = type.prototype.onExecuted;
+          this.serialize_widgets = false;
         }
       },
     });
