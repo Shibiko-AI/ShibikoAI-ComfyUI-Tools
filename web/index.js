@@ -2,7 +2,6 @@ import { api } from '../../scripts/api.js';
 import { app } from '../../scripts/app.js';
 import { $el } from '../../scripts/ui.js';
 
-
 function loadCSS(url) {
   return new Promise((resolve, reject) => {
     const link = document.createElement('link');
@@ -14,7 +13,7 @@ function loadCSS(url) {
   });
 }
 
-function loadHljsCSS() {
+function loadHljsStyleBlock() {
   if (document.getElementById('hljs-style')) {
     return;
   }
@@ -103,6 +102,47 @@ function get_position_style(ctx, widget_width, y, node_height) {
   };
 }
 
+function create_code_widget(code = '# Waiting for code...', language = 'python', id = 0) {
+  /** @type {IWidget} */
+  let widget = {
+    node: id,
+    type: 'CODE',
+    name: 'CODE',
+    html: $el('section', { className: 'get-position-style' }),
+    draw(ctx, node, widget_width, y) {
+      Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1]));
+    },
+  };
+
+  const preBlock = $el('pre', {});
+  const innerHTML = hljs.highlight(code, { language }).value;
+  const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
+  preBlock.appendChild(codeBlock);
+  widget.html.appendChild(preBlock);
+  document.body.appendChild(widget.html);
+
+  api.addEventListener(`any-node-show-code-${id}`, (event) => {
+    console.log('API EVENT', event);
+    const { code, language, unique_id } = event.detail;
+    update_code_widget(code, language, unique_id);
+  });
+
+  return widget;
+}
+
+function update_code_widget (code = '# Waiting for code...', language = 'python', id = 0) {
+  const el = document.getElementById(`any-node-show-code-${id}`);
+  el.innerHTML = hljs.highlight(code + '\n\n', { language }).value;
+  highlight();
+}
+
+function highlight() {
+  try {
+    hljs.highlightAll();
+    hljs.initLineNumbersOnLoad();
+  } catch (e) {}
+}
+
 const CDN_BASE_URL = 'https://cdnjs.cloudflare.com/ajax/libs';
 Promise.all([
   loadScript(`${CDN_BASE_URL}/highlight.js/11.9.0/highlight.min.js`),
@@ -113,68 +153,25 @@ Promise.all([
     // No vulnerabilities here so suppress the warning
     hljs.configure({ ignoreUnescapedHTML: true });
 
-    function highlight() {
-      try {
-        hljs.highlightAll();
-        hljs.initLineNumbersOnLoad();
-      } catch (e) {}
-    }
-
     app.registerExtension({
       name: 'AnyNodeShowCode',
       async sleep (ms=0) {
         return new Promise(resolve => setTimeout(resolve, ms));
       },
-      async nodeCreated(node, app) {
-        await this.sleep(0);
+      async nodeCreated(node) {
+        await this.sleep(0); // Wait for node object to be updated
         if (node.type === 'AnyNodeShowCode') {
-          let widget = {
-            type: 'CODE',
-            name: 'CODE',
-            draw(ctx, node, widget_width, y) {
-              Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1])); // assign the required style when we are drawn
-            },
+          const widget = create_code_widget('# Waiting for code...', 'python', node.id);
+          loadHljsStyleBlock();
+          highlight();
+
+          node.serialize_widgets = false;
+          node.addCustomWidget(widget);
+          node.onRemoved = function () {
+            widget.html.remove();
+            // const { [`any-node-show-code-${widget.node}`]:[listener] } = getEventListeners(api);
+            // api.removeEventListener(`any-node-show-code-${widget.node}`, listener);
           };
-
-          const create_code_widget = (code = '# Waiting for code...', language = 'python', id = 0) => {
-            widget.html = $el('section', { className: 'get-position-style' });
-            const preBlock = $el('pre', {});
-            const innerHTML = hljs.highlight(code, { language }).value;
-            const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
-            preBlock.appendChild(codeBlock);
-            widget.html.appendChild(preBlock);
-            document.body.appendChild(widget.html);
-
-            node.addCustomWidget(widget);
-            highlight();
-
-            node.onRemoved = function () {
-              widget.html.remove();
-            };
-
-            return widget;
-          };
-
-          const update_code_widget = (code = '# Waiting for code...', language = 'python', id = 0) => {
-            const el = document.getElementById(`any-node-show-code-${id}`);
-            // There are no script injection vulnerabilities here, hljs
-            el.innerHTML = hljs.highlight(code + '\n\n', { language }).value;
-            highlight();
-          };
-
-          loadHljsCSS();
-
-          api.addEventListener(`any-node-show-code-${node.id}`, (event) => {
-            console.log('API EVENT', event);
-            const { code, language, unique_id } = event.detail;
-            update_code_widget(code, language, unique_id);
-          });
-
-          let code = '# Waiting for code...';
-          let language = 'python';
-          widget = create_code_widget(code, language, node.id);
-
-          this.serialize_widgets = false;
         }
       },
     });
