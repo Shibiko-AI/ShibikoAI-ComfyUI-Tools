@@ -33,11 +33,11 @@ function loadHljsStyleBlock() {
       height: calc(100% - 2rem);
     }
     
-    pre code.hljs {
-      padding: 1.25em 0.5rem 0.5rem 0.5rem;
+    pre code.hljs, .any-node-input {
+      padding: 0.75em 0.5rem 0.5rem 0.5rem;
     }
     
-    code.hljs {
+    code.hljs, .any-node-input {
       display: flex;
       flex: 1;
       border: 1px solid;
@@ -150,7 +150,7 @@ function setMiniumSize(node, width, height) {
 function create_code_widget(code = '# Waiting for code...', language = 'python', id = 0) {
   const listener = api.addEventListener(`any-node-show-code-${id}`, (event) => {
     const { code, control, language, unique_id } = event.detail;
-    widget.control = control;
+    widget.value = control;
     update_code_widget(code, language, unique_id);
   });
 
@@ -162,9 +162,6 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     html: $el('section', { className: 'get-position-style' }),
     draw(ctx, node, widget_width, y) {
       Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1]));
-    },
-    onClick() {
-      console.log('CLICKY CLICKY CLICK:', arguments);
     },
     onRemoved() {
       api.removeEventListener(`any-node-show-code-${id}`, listener);
@@ -184,7 +181,7 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
 function update_code_widget (code = '# Waiting for code...', language = 'python', id = 0) {
   const el = document.getElementById(`any-node-show-code-${id}`);
   el.innerHTML = hljs.highlight(code + '\n\n', { language }).value;
-  highlight();
+  hljs.initLineNumbersOnLoad();
 }
 
 function highlight() {
@@ -225,6 +222,12 @@ Promise.all([
               output.color_on = "#f495bf";
             }
           });
+
+          (node.widgets || []).forEach(widget => {
+            if (widget.type === 'customtext') {
+              widget.inputEl.classList.add('any-node-input');
+            }
+          });
         }
 
         if (node.type === 'AnyNodeShowCode') {
@@ -233,8 +236,19 @@ Promise.all([
           loadHljsStyleBlock();
           highlight();
 
-          // node.serialize_widgets = false;
           node.addCustomWidget(widget);
+
+          // Add a callback to the show widget
+          node.widgets[0].callback = (value) => {
+            const control = node.widgets[1].value;
+            if (!control) return;
+
+            update_code_widget(
+              value === 'code' ? control.function : JSON.stringify(control, null, 4),
+              value === 'code' ? 'python' : 'json',
+              node.id
+            );
+          };
 
           const onDrawForeground = node.onDrawForeground;
           node.onDrawForeground = function(ctx, graph) {
