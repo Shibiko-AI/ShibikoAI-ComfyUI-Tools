@@ -334,18 +334,35 @@ Promise.all([
               widget.inputEl.classList.add('any-node-input');
             }
           });
+
+          if (node.type !== 'AnyNodeShowCode') {
+            node.onExecuted = function (event) {
+              node.outputs_values = node.outputs_values || [];
+              node.outputs.forEach((output, index) => {
+                node.outputs_values[index] = event[output.name] && event[output.name][0] || undefined;
+              });
+            };
+          }
         }
 
         if (node.type === 'AnyNodeShowCode') {
-          if (node.inputs[0].link) {
+          let code = '# Waiting for code...';
+          let language = 'python';
+          let control = null;
+
+          try {
             const { link } = node.inputs[0];
             const { origin_id, origin_slot } = app.graph.links[link];
             const origin_node = app.graph.getNodeById(origin_id);
-            const control = origin_node.widgets_values[1];
-            console.log('LINK ::', link, origin_id, origin_slot, control);
-          }
 
-          const widget = create_code_widget('# Waiting for code...', 'python', node.id);
+            control = origin_node.outputs_values[origin_slot];
+            code = control && control.function + '\n\n' || code;
+          } catch(e) {}
+
+          const widget = create_code_widget(code, language, node.id);
+          widget.value = control;
+          node.widgets_values = ['code', control];
+
           setMiniumSize(node, 300, 200);
           loadHljsStyleBlock();
           highlight();

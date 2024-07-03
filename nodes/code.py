@@ -39,7 +39,6 @@ class AnyNodeShowCode:
         PromptServer.instance.send_sync(f"any-node-show-code-{unique_id}", event)
 
     def __call__(self, control: dict, show: str, unique_id: int):
-        code = "# Waiting for code..."
         language = "python"
 
         if show == 'code' or show is None:
@@ -49,7 +48,7 @@ class AnyNodeShowCode:
             language = "json"
 
         self.send_code(code, control, language, unique_id)
-        return []
+        return {"ui": {"code": [code], "control": [control], "language": [language], "unique_id": [unique_id]}}
 
 
 NODE_CLASS_MAPPINGS = {"AnyNodeShowCode": AnyNodeShowCode}
