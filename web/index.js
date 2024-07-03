@@ -44,7 +44,7 @@ function loadHljsStyleBlock() {
       border-radius: 0.25rem;
       border-color: var(--border-color);
       color: #abb2bf;
-      background: #282c34;
+      background: #282c34 !important;
       height: 100%;
     }
     
@@ -131,9 +131,11 @@ function loadHljsStyleBlock() {
     @keyframes flash-green {
       0%, 100% {
         background-color: rgba(40, 44, 52, 0.5);
+        border-color: rgba(40, 44, 52, 0.5);
       }
       50% {
         background-color: rgba(80, 200, 120, 0.5);
+        border-color: rgba(80, 200, 120, 0.5);
       }
     }
     
@@ -253,13 +255,6 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     },
   };
 
-  // const preBlock = $el('pre', {});
-  // const innerHTML = hljs.highlight(code, { language }).value;
-  // const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
-  // preBlock.appendChild(codeBlock);
-  // widget.html.appendChild(preBlock);
-  // document.body.appendChild(widget.html);
-
   const highlightedCode = hljs.highlight(code, { language }).value;
   console.log('highlightedCode', highlightedCode);
   widget.html.innerHTML = `
@@ -274,12 +269,14 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     </pre>
   `;
   widget.html.querySelector(`#any-node-show-code-${id}`).innerHTML = highlightedCode;
+  const codeEl = widget.html.querySelector('code');
   const button = widget.html.querySelector('.copy-button');
   button.addEventListener('click',
     () => {
       widget.copy();
       button.classList.remove('flash');
-      setTimeout(() => button.classList.add('flash'), 0);
+      codeEl.classList.remove('flash');
+      setTimeout(() => button.classList.add('flash') || codeEl.classList.add('flash'), 0);
     }
   );
   document.body.appendChild(widget.html);
