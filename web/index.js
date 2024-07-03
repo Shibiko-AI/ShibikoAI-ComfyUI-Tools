@@ -277,6 +277,7 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
       button.classList.remove('flash');
       codeEl.classList.remove('flash');
       setTimeout(() => button.classList.add('flash') || codeEl.classList.add('flash'), 0);
+      setTimeout(() => button.classList.remove('flash') || codeEl.classList.remove('flash'), 1000);
     }
   );
   document.body.appendChild(widget.html);
@@ -351,6 +352,7 @@ Promise.all([
           loadHljsStyleBlock();
           highlight();
 
+          // Just found out that there is node.addDOMWidget, but this is working...
           node.addCustomWidget(widget);
 
           // Add a callback to the show widget
