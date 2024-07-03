@@ -124,14 +124,48 @@ function loadHljsStyleBlock() {
       background-color: rgba(92, 99, 112, 0.5);
     }
     
+    .copy-button:hover svg {
+      transform: scale(1.1);
+    }
+    
+    @keyframes flash-green {
+      0%, 100% {
+        background-color: rgba(40, 44, 52, 0.5);
+      }
+      50% {
+        background-color: rgba(80, 200, 120, 0.5);
+      }
+    }
+    
+    @keyframes flash-svg {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.4);
+      }
+      100% {
+        transform: scale(1.1);
+      }
+    }
+    
+    .flash {
+      animation: flash-green 1s ease;
+      outline: none;
+    }
+    
+    .flash svg {
+      animation: flash-svg 1s ease;
+    }
+    
+    .copy-button:active {
+      transform: scale(0.9);
+    }
+    
     .copy-button svg {
       width: 1rem;
       height: 1rem;
       stroke: #abb2bf;
-    }
-    
-    .copy-button:active {
-      transform: scale(0.95);
     }
   `;
   document.body.appendChild(style);
@@ -240,7 +274,14 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     </pre>
   `;
   widget.html.querySelector(`#any-node-show-code-${id}`).innerHTML = highlightedCode;
-  widget.html.querySelector('.copy-button').addEventListener('click', () => widget.copy());
+  const button = widget.html.querySelector('.copy-button');
+  button.addEventListener('click',
+    () => {
+      widget.copy();
+      button.classList.remove('flash');
+      setTimeout(() => button.classList.add('flash'), 0);
+    }
+  );
   document.body.appendChild(widget.html);
 
   return widget;
