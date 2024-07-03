@@ -66,6 +66,41 @@ function loadHljsStyleBlock() {
     .hljs-ln-code {
       padding-left: 8px !important;
     }
+    
+    pre code {
+    --scrollbar-bg: #282c34;
+    --thumb-bg: #4b5263;
+    --thumb-bg-hover: #5c6370;
+  
+    overflow: auto;
+
+    scrollbar-width: thin;
+      scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
+    }
+    
+    pre code::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    
+    pre code::-webkit-scrollbar-track {
+      background: var(--scrollbar-bg);
+    }
+    
+    pre code::-webkit-scrollbar-thumb {
+      background-color: var(--thumb-bg);
+      border-radius: 6px;
+      border: 3px solid var(--scrollbar-bg);
+    }
+    
+    pre code::-webkit-scrollbar-thumb:hover {
+      background-color: var(--thumb-bg-hover);
+    }
+    
+    pre code {
+      scrollbar-width: thin;
+      scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
+    }
   `;
   document.body.appendChild(style);
 }
