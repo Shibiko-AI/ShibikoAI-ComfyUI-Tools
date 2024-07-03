@@ -345,7 +345,6 @@ Promise.all([
             console.log('LINK ::', link, origin_id, origin_slot, control);
           }
 
-
           const widget = create_code_widget('# Waiting for code...', 'python', node.id);
           setMiniumSize(node, 300, 200);
           loadHljsStyleBlock();
