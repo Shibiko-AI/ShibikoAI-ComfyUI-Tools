@@ -29,9 +29,10 @@ class AnyNodeShowCode:
     FUNCTION = "__call__"
 
     @staticmethod
-    def send_code(code: str, language: str, unique_id: int):
+    def send_code(code: str, control: dict, language: str, unique_id: int):
         event = dict(
             code=code,
+            control=control,
             language=language,
             unique_id=unique_id
         )
@@ -47,7 +48,7 @@ class AnyNodeShowCode:
             code = json.dumps(control, indent=4)
             language = "json"
 
-        self.send_code(code, language, unique_id)
+        self.send_code(code, control, language, unique_id)
         return []
 
 

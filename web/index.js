@@ -97,12 +97,28 @@ function get_position_style(ctx, widget_width, y, node_height) {
     transform: transform.toString(),
     transformOrigin: '0 0',
     maxWidth: `${widget_width - MARGIN * 2}px`,
-    minHeight: `${node_height - 56 - MARGIN * 2}px`,
-    maxHeight: `${node_height - 56 - MARGIN * 2}px`,    // we're assuming we have the whole height of the node
+    minHeight: `${node_height - 56 - MARGIN / 2}px`,
+    maxHeight: `${node_height - 56 - MARGIN / 2}px`,    // we're assuming we have the whole height of the node
   };
 }
 
+function setMiniumSize(node, width, height) {
+  if (node.size[0] < width) {
+    node.size[0] = width;
+  }
+
+  if (node.size[1] < height) {
+    node.size[1] = height;
+  }
+}
+
 function create_code_widget(code = '# Waiting for code...', language = 'python', id = 0) {
+  const listener = api.addEventListener(`any-node-show-code-${id}`, (event) => {
+    const { code, control, language, unique_id } = event.detail;
+    widget.control = control;
+    update_code_widget(code, language, unique_id);
+  });
+
   /** @type {IWidget} */
   let widget = {
     node: id,
@@ -112,6 +128,12 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     draw(ctx, node, widget_width, y) {
       Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1]));
     },
+    onClick() {
+      console.log('CLICKY CLICKY CLICK:', arguments);
+    },
+    onRemoved() {
+      api.removeEventListener(`any-node-show-code-${id}`, listener);
+    },
   };
 
   const preBlock = $el('pre', {});
@@ -120,12 +142,6 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
   preBlock.appendChild(codeBlock);
   widget.html.appendChild(preBlock);
   document.body.appendChild(widget.html);
-
-  api.addEventListener(`any-node-show-code-${id}`, (event) => {
-    console.log('API EVENT', event);
-    const { code, language, unique_id } = event.detail;
-    update_code_widget(code, language, unique_id);
-  });
 
   return widget;
 }
@@ -154,7 +170,7 @@ Promise.all([
     hljs.configure({ ignoreUnescapedHTML: true });
 
     app.registerExtension({
-      name: 'AnyNodeShowCode',
+      name: 'AnyNode',
       async sleep (ms=0) {
         return new Promise(resolve => setTimeout(resolve, ms));
       },
@@ -162,16 +178,47 @@ Promise.all([
         await this.sleep(0); // Wait for node object to be updated
         if (node.type === 'AnyNodeShowCode') {
           const widget = create_code_widget('# Waiting for code...', 'python', node.id);
+          setMiniumSize(node, 300, 200);
           loadHljsStyleBlock();
           highlight();
 
-          node.serialize_widgets = false;
+          // node.serialize_widgets = false;
           node.addCustomWidget(widget);
-          node.onRemoved = function () {
-            widget.html.remove();
-            // const { [`any-node-show-code-${widget.node}`]:[listener] } = getEventListeners(api);
-            // api.removeEventListener(`any-node-show-code-${widget.node}`, listener);
+
+          const onDrawForeground = node.onDrawForeground;
+          node.onDrawForeground = function(ctx, graph) {
+            onDrawForeground.apply(this, arguments);
+            widget.html.style.display = this.flags.collapsed ? 'none' : 'block';
           };
+
+          const onRemoved = node.onRemoved;
+          node.onRemoved = function () {
+            onRemoved.apply(this, arguments);
+            widget.html.remove();
+          };
+
+          const onResize = node.onResize;
+          node.onResize = function(size) {
+            console.log('Resize called', this);
+            onResize.apply(this, arguments);
+            setMiniumSize(node, 300, 200);
+          };
+        }
+
+        if (node.type.includes('AnyNode')) {
+          node.bgcolor = "#512222";
+
+          node.inputs.forEach(input => {
+            if (input.name === 'control') {
+              input.color = "#f495bf";
+            }
+          });
+
+          node.outputs.forEach(output => {
+            if (output.name === 'control') {
+              output.color = "#f495bf";
+            }
+          });
         }
       },
     });
