@@ -101,6 +101,38 @@ function loadHljsStyleBlock() {
       scrollbar-width: thin;
       scrollbar-color: var(--thumb-bg) var(--scrollbar-bg);
     }
+    
+    pre {
+      position: relative;
+    }
+    
+    .copy-button {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.1rem;
+      padding: 0.5rem;
+      margin: 0;
+      background-color: rgba(40, 44, 52, 0.5);
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 0rem;
+    }
+    
+    .copy-button:hover {
+      background-color: rgba(92, 99, 112, 0.5);
+    }
+    
+    .copy-button svg {
+      width: 1rem;
+      height: 1rem;
+      stroke: #abb2bf;
+    }
+    
+    .copy-button:active {
+      transform: scale(0.95);
+    }
   `;
   document.body.appendChild(style);
 }
@@ -125,15 +157,15 @@ function get_position_style(ctx, widget_width, y, node_height) {
   const transform = new DOMMatrix()
     .scaleSelf(elRect.width / ctx.canvas.width, elRect.height / ctx.canvas.height)
     .multiplySelf(initialTransform)
-    .translateSelf(MARGIN, y);
+    .translateSelf(MARGIN, y - MARGIN / 1.5);
 
   return {
     position: 'absolute',
     transform: transform.toString(),
     transformOrigin: '0 0',
     maxWidth: `${widget_width - MARGIN * 2}px`,
-    minHeight: `${node_height - 56 - MARGIN / 2}px`,
-    maxHeight: `${node_height - 56 - MARGIN / 2}px`,    // we're assuming we have the whole height of the node
+    minHeight: `${node_height - 56 - MARGIN / 2.5}px`,
+    maxHeight: `${node_height - 56 - MARGIN / 2.5}px`,    // we're assuming we have the whole height of the node
   };
 }
 
@@ -151,6 +183,10 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
   const listener = api.addEventListener(`any-node-show-code-${id}`, (event) => {
     const { code, control, language, unique_id } = event.detail;
     widget.value = control;
+    widget.language = language;
+    if (!app.graph.getNodeById(unique_id).widgets_values) {
+      app.graph.getNodeById(unique_id).widgets_values = [];
+    }
     app.graph.getNodeById(unique_id).widgets_values[1] = control;
     update_code_widget(code, language, unique_id);
   });
@@ -161,6 +197,20 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     type: 'CODE',
     name: 'CODE',
     html: $el('section', { className: 'get-position-style' }),
+    language: 'python',
+    copy() {
+      if (!widget.value) {
+        return navigator.clipboard.writeText(code);
+      }
+
+      if (this.language === 'python') {
+        return navigator.clipboard.writeText(widget.value.function);
+      }
+
+      if (this.language === 'json') {
+        return navigator.clipboard.writeText(JSON.stringify(widget.value, null, 4));
+      }
+    },
     draw(ctx, node, widget_width, y) {
       Object.assign(this.html.style, get_position_style(ctx, widget_width, y, node.size[1]));
     },
@@ -169,11 +219,28 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
     },
   };
 
-  const preBlock = $el('pre', {});
-  const innerHTML = hljs.highlight(code, { language }).value;
-  const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
-  preBlock.appendChild(codeBlock);
-  widget.html.appendChild(preBlock);
+  // const preBlock = $el('pre', {});
+  // const innerHTML = hljs.highlight(code, { language }).value;
+  // const codeBlock = $el('code', { id: `any-node-show-code-${id}`, className: 'language-python', innerHTML });
+  // preBlock.appendChild(codeBlock);
+  // widget.html.appendChild(preBlock);
+  // document.body.appendChild(widget.html);
+
+  const highlightedCode = hljs.highlight(code, { language }).value;
+  console.log('highlightedCode', highlightedCode);
+  widget.html.innerHTML = `
+    <pre>
+      <code id="any-node-show-code-${id}" class="language-python"></code>
+      <button class="copy-button" aria-label="Copy code">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+    </pre>
+  `;
+  widget.html.querySelector(`#any-node-show-code-${id}`).innerHTML = highlightedCode;
+  widget.html.querySelector('.copy-button').addEventListener('click', () => widget.copy());
   document.body.appendChild(widget.html);
 
   return widget;
@@ -232,6 +299,15 @@ Promise.all([
         }
 
         if (node.type === 'AnyNodeShowCode') {
+          if (node.inputs[0].link) {
+            const { link } = node.inputs[0];
+            const { origin_id, origin_slot } = app.graph.links[link];
+            const origin_node = app.graph.getNodeById(origin_id);
+            const control = origin_node.widgets_values[1];
+            console.log('LINK ::', link, origin_id, origin_slot, control);
+          }
+
+
           const widget = create_code_widget('# Waiting for code...', 'python', node.id);
           setMiniumSize(node, 300, 200);
           loadHljsStyleBlock();
