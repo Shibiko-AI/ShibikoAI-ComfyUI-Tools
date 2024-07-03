@@ -92,7 +92,7 @@ class Waifu2x:
             noise_level: Optional[int] = 3,
             model_type: Optional[str] = 'art',
     ):
-        print(f'Waifu2x Upscaling image with unique_id: {unique_id} noise_level:{noise_level} scale:{scale}x model_type:{model_type}...')
+        print(f'Waifu2x Upscaling image with noise_level:{noise_level} scale:{scale}x model_type:{model_type}...')
         print(f'Type of image: {type(image)}')
 
         if self.model_type != model_type:
