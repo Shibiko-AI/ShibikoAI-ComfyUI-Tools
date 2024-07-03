@@ -256,7 +256,6 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
   };
 
   const highlightedCode = hljs.highlight(code, { language }).value;
-  console.log('highlightedCode', highlightedCode);
   widget.html.innerHTML = `
     <pre>
       <code id="any-node-show-code-${id}" class="language-python"></code>
@@ -401,7 +400,6 @@ Promise.all([
 
           const onResize = node.onResize;
           node.onResize = function(size) {
-            console.log('Resize called', this);
             onResize.apply(this, arguments);
             setMiniumSize(node, 300, 200);
           };
