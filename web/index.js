@@ -211,6 +211,22 @@ Promise.all([
       },
       async nodeCreated(node) {
         await this.sleep(0); // Wait for node object to be updated
+        if (node.type.includes('AnyNode')) {
+          node.bgcolor = "#512222";
+
+          (node.inputs || []).forEach(input => {
+            if (input.name === 'control') {
+              input.color_on = "#f495bf";
+            }
+          });
+
+          (node.outputs || []).forEach(output => {
+            if (output.name === 'control') {
+              output.color_on = "#f495bf";
+            }
+          });
+        }
+
         if (node.type === 'AnyNodeShowCode') {
           const widget = create_code_widget('# Waiting for code...', 'python', node.id);
           setMiniumSize(node, 300, 200);
@@ -238,22 +254,6 @@ Promise.all([
             onResize.apply(this, arguments);
             setMiniumSize(node, 300, 200);
           };
-        }
-
-        if (node.type.includes('AnyNode')) {
-          node.bgcolor = "#512222";
-
-          node.inputs.forEach(input => {
-            if (input.name === 'control') {
-              input.color = "#f495bf";
-            }
-          });
-
-          node.outputs.forEach(output => {
-            if (output.name === 'control') {
-              output.color = "#f495bf";
-            }
-          });
         }
       },
     });
