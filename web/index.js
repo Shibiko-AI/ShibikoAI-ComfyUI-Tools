@@ -151,6 +151,7 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
   const listener = api.addEventListener(`any-node-show-code-${id}`, (event) => {
     const { code, control, language, unique_id } = event.detail;
     widget.value = control;
+    app.graph.getNodeById(unique_id).widgets_values[1] = control;
     update_code_widget(code, language, unique_id);
   });
 
@@ -239,10 +240,11 @@ Promise.all([
           node.addCustomWidget(widget);
 
           // Add a callback to the show widget
-          node.widgets[0].callback = (value) => {
+          node.widgets[0].callback = function (value) {
             const control = node.widgets[1].value;
-            if (!control) return;
+            node.widgets_values[0] = value;
 
+            if (!control) return;
             update_code_widget(
               value === 'code' ? control.function : JSON.stringify(control, null, 4),
               value === 'code' ? 'python' : 'json',
