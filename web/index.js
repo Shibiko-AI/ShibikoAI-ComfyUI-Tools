@@ -277,7 +277,6 @@ function create_code_widget(code = '# Waiting for code...', language = 'python',
       button.classList.remove('flash');
       codeEl.classList.remove('flash');
       setTimeout(() => button.classList.add('flash') || codeEl.classList.add('flash'), 0);
-      setTimeout(() => button.classList.remove('flash') || codeEl.classList.remove('flash'), 1000);
     }
   );
   document.body.appendChild(widget.html);
@@ -372,6 +371,10 @@ Promise.all([
           node.onDrawForeground = function(ctx, graph) {
             onDrawForeground.apply(this, arguments);
             widget.html.style.display = this.flags.collapsed ? 'none' : 'block';
+            if (this.flags.collapsed) {
+              widget.html.querySelector('code').classList.remove('flash');
+              widget.html.querySelector('.copy-button').classList.remove('flash');
+            }
           };
 
           const onRemoved = node.onRemoved;
