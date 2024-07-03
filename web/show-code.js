@@ -1,8 +1,8 @@
 import { create_show_code_widget, setMiniumSize, update_show_code_widget } from './widget.js';
 
 function loadStoredOutputs(node) {
-  let code = '# Waiting for code...';
   let language = 'python';
+  let code = '# Waiting for code...';
   let control = null;
 
   try {
@@ -70,5 +70,18 @@ export function showCode(node) {
   node.onResize = function(size) {
     onResize.apply(this, arguments);
     setMiniumSize(node, 300, 200);
+  };
+
+  const onConnectInput = node.onConnectInput;
+  node.onConnectInput = function (input_slot, origin_type, origin_output, origin_node, origin_slot) {
+    onConnectInput.apply(this, arguments);
+    try {
+      widget.value = origin_node.outputs_values[origin_slot];
+      node.widgets_values[1] = widget.value;
+      const [show, control] = node.widgets_values;
+      const language = show === 'code' ? 'python' : 'json';
+      const code = show === 'code' ? control.function : JSON.stringify(control, null, 4);
+      update_show_code_widget(code, language, node.id);
+    } catch(e) {}
   };
 }
