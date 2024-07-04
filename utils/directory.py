@@ -1,6 +1,5 @@
 import os
 import shutil
-from typing import LiteralString
 
 
 def get_models_dir():
