@@ -29,9 +29,6 @@ class Cascade:
                 "dilation": ("INT", {"default": 4, "min": 0, "step": 1},),
                 "padding": ("INT", {"default": 4, "min": 0, "step": 1},),
             },
-            "hidden": {
-                "unique_id": "UNIQUE_ID"
-            },
         }
 
     CATEGORY = "Shibiko"
@@ -148,7 +145,6 @@ class Cascade:
         cascade='frontalface_default',
         dilation=4,
         padding=50,
-        unique_id=None
     ):
         if cascade != self.cascade:
             self.load(cascade)

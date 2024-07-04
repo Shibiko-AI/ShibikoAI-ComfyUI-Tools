@@ -17,16 +17,12 @@ class Luts:
                 "image": ("IMAGE",),
                 "lut": (luts, {"default": 'Cinematic'}),
             },
-            "optional": {},
-            "hidden": {
-                "unique_id": "UNIQUE_ID"
-            },
         }
 
     CATEGORY = "Shibiko"
 
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
 
     FUNCTION = "__call__"
 

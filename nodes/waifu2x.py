@@ -5,7 +5,7 @@ from ..utils.convert import convert
 
 class Waifu2x:
     @classmethod
-    def INPUT_TYPES(self):
+    def INPUT_TYPES(cls):
         return {
             "required": {
                 "image": ("IMAGE",),
@@ -15,15 +15,12 @@ class Waifu2x:
                 "scale": ([1, 2, 4],),
                 "model_type": (["art", "photo"],),
             },
-            "hidden": {
-                "unique_id": "UNIQUE_ID"
-            },
         }
 
     CATEGORY = "Shibiko"
 
     RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
 
     FUNCTION = "__call__"
 
@@ -94,9 +91,8 @@ class Waifu2x:
             scale: Optional[int] = 1,
             noise_level: Optional[int] = 3,
             model_type: Optional[str] = 'art',
-            unique_id=None
     ):
-        print(f'Waifu2x Upscaling image with unique_id: {unique_id} noise_level:{noise_level} scale:{scale}x model_type:{model_type}...')
+        print(f'Waifu2x Upscaling image with noise_level:{noise_level} scale:{scale}x model_type:{model_type}...')
         print(f'Type of image: {type(image)}')
 
         if self.model_type != model_type:
