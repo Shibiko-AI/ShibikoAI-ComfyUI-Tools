@@ -223,4 +223,4 @@ class ImageFilters:
 
 
 NODE_CLASS_MAPPINGS = {"ImageFilters": ImageFilters}
-NODE_DISPLAY_NAME_MAPPINGS = {"Cascade": "Shibiko AI - Image Filters"}
+NODE_DISPLAY_NAME_MAPPINGS = {"ImageFilters": "Shibiko AI - Image Filters"}
