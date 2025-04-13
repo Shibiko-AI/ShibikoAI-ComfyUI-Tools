@@ -6,14 +6,6 @@ This project integrates and builds upon work from the following developers and r
 
 ### Third-Party Comfy UI Nodes
 
-- **WD14-Tagger**
-    - **Author:** pythongosssss
-    - **Source:** https://github.com/pythongosssss/stable-diffusion-webui-wd14-tagger
-    - **License:** MIT
-    - **Usage:** 
-      - `WD14Tagger`: Tagging images with anime-style concept labels
-    - **Note:** Switched from my own WD14-Tagger implementation due to its extra convenient features.
-
 - **Essentials**
     - **Author:** Matteo Spinelli
     - **Source:** https://github.com/mat-sz/ComfyUI-Utilities
