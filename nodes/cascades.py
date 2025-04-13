@@ -31,7 +31,7 @@ class Cascade:
             },
         }
 
-    CATEGORY = "Shibiko"
+    CATEGORY = "Shibiko AI"
 
     RETURN_TYPES = ("IMAGE", "MASK", "BBOX")
     RETURN_NAMES = ("image", "mask", "bbox")
@@ -71,7 +71,7 @@ class Cascade:
             gray = self.image
 
         # Detect faces in the image
-        self.bbox = self.haar_cascade_face.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(24, 24))
+        self.bbox = self.haar_cascade_face.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(32, 32))
         return self.bbox
 
     def draw(self, image=None, padding=None):
@@ -101,7 +101,7 @@ class Cascade:
         for (x, y, w, h) in self.bbox:
             mask[y - self.padding:y + h + self.padding, x - self.padding:x + w + self.padding] = 255
 
-        if blur is not None:
+        if blur is not None and blur > 0:
             if blur_type == 'gaussian':
                 blur = blur if blur % 2 == 1 else blur + 1
                 dilation = dilation if dilation % 2 == 1 else dilation + 1
@@ -145,6 +145,7 @@ class Cascade:
         cascade='frontalface_default',
         dilation=4,
         padding=50,
+        **kwargs
     ):
         if cascade != self.cascade:
             self.load(cascade)

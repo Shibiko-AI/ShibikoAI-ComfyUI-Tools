@@ -1,6 +1,6 @@
 import torch
 from typing import Optional
-from ..utils.convert import convert
+from ..utils.convert import convert, tensor2pil, pil2tensor
 
 
 class Waifu2x:
@@ -17,7 +17,7 @@ class Waifu2x:
             },
         }
 
-    CATEGORY = "Shibiko"
+    CATEGORY = "Shibiko AI"
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
@@ -35,7 +35,6 @@ class Waifu2x:
         self.output_type = kwargs.get('output_type', 'pil')
         self.scale = kwargs.get('scale', 1)
         self.tile_size = kwargs.get('tile_size', 256)
-
         self.load()
 
     def load(self, model_type: Optional[str] = 'art'):
@@ -47,22 +46,21 @@ class Waifu2x:
             keep_alpha=self.keep_alpha,
             amp=self.amp,
             trust_repo=True,
-        ).to('cuda')
-
+        )
         self.method = self.waifu2x_method(self.scale, self.noise_level)
         self.model.set_mode(method=self.method, noise_level=self.noise_level)
 
     def set(
-            self,
-            amp: Optional[bool] = None,
-            batch_size: Optional[int] = None,
-            enabled: Optional[bool] = None,
-            keep_alpha: Optional[bool] = None,
-            model_type: Optional[str] = None,
-            noise_level: Optional[int] = None,
-            output_type: Optional[str] = None,
-            scale: Optional[int] = None,
-            tile_size: Optional[int] = None,
+        self,
+        amp: Optional[bool] = None,
+        batch_size: Optional[int] = None,
+        enabled: Optional[bool] = None,
+        keep_alpha: Optional[bool] = None,
+        model_type: Optional[str] = None,
+        noise_level: Optional[int] = None,
+        output_type: Optional[str] = None,
+        scale: Optional[int] = None,
+        tile_size: Optional[int] = None,
     ):
         settings = locals()
         settings.pop('self')
@@ -86,36 +84,53 @@ class Waifu2x:
             return 'noise_scale4x'
 
     def __call__(
-            self,
-            image,
-            scale: Optional[int] = 1,
-            noise_level: Optional[int] = 3,
-            model_type: Optional[str] = 'art',
+        self,
+        image,
+        scale: Optional[int] = 1,
+        noise_level: Optional[int] = 3,
+        model_type: Optional[str] = 'art',
+        **kwargs
     ):
-        print(f'Waifu2x Upscaling image with noise_level:{noise_level} scale:{scale}x model_type:{model_type}...')
-        print(f'Type of image: {type(image)}')
-
+        print('WAIFU2X CALL:', scale, noise_level, model_type)
         if self.model_type != model_type:
             self.load(model_type)
 
-        image = convert(image)
-        scale = scale if scale is not None else self.scale
-        noise_level = noise_level if noise_level is not None else self.noise_level
+        if isinstance(image, torch.Tensor):
+            if image.dim() == 3:
+                image = [image]
+            elif image.dim() == 4:
+                image = [img for img in image]
 
-        if self.scale != scale or self.noise_level != noise_level:
-            self.method = self.waifu2x_method(scale, noise_level)
-            self.model.set_mode(self.method, noise_level)
-        image = self.model.infer(image, method=self.method, noise_level=noise_level, output_type='pil')
-        image = convert(image)
-        return (image,)
+        tensors = []
+        for img in image:
+            img = img.cpu()
+            img_pil = tensor2pil(img)
 
-    # @classmethod
-    # def IS_CHANGED(self, video, **kwargs):
-    #     return hash_path(video)
-    #
-    # @classmethod
-    # def VALIDATE_INPUTS(self, video, **kwargs):
-    #     return validate_path(video, allow_none=True)
+            scale = scale if scale is not None else self.scale
+            noise_level = noise_level if noise_level is not None else self.noise_level
+
+            if self.scale != scale or self.noise_level != noise_level:
+                self.method = self.waifu2x_method(scale, noise_level)
+                self.model.set_mode(self.method, noise_level)
+
+            print('METHOD:', self.method)
+
+            img_pil = self.model.infer(img_pil, method=self.method, noise_level=noise_level, output_type='pil')
+
+            img_tensor = pil2tensor(img_pil)
+            tensors.append(img_tensor)
+
+        if len(tensors) > 1:
+            output = torch.cat(tensors, dim=0)
+        else:
+            output = tensors[0]
+
+        if output.dtype != torch.float32:
+            output = output.float()
+        if output.max() > 1.0:
+            output = output / 255.0
+
+        return (output,)
 
 
 NODE_CLASS_MAPPINGS = {"Waifu2x": Waifu2x}
