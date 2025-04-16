@@ -41,11 +41,8 @@ class Cascade:
     def __init__(self, cascade='frontalface_default', padding=25):
         self.cascades_directory = None
         self.cascade = cascade
-        self.bbox = None
-        self.image = None
         self.haar_cascade_face = None
         self.padding = padding
-
         self.load(cascade)
 
     def load(self, cascade='frontalface_default'):
@@ -62,46 +59,25 @@ class Cascade:
             raise ValueError('Invalid cascade path or name')
 
     def detect(self, image):
-        self.image = image
-
-        # Check Frame Color
-        if len(self.image.shape) > 2:
-            gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        if len(image.shape) > 2:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         else:
-            gray = self.image
+            gray = image
+        return self.haar_cascade_face.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(32, 32))
 
-        # Detect faces in the image
-        self.bbox = self.haar_cascade_face.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(32, 32))
-        return self.bbox
+    @staticmethod
+    def draw(image, bbox, padding):
+        image = image.copy()
+        for (x, y, w, h) in bbox:
+            cv2.rectangle(image, (x - padding, y - padding), (x + w + padding, y + h + padding), (255, 0, 0), 2)
+        return image
 
-    def draw(self, image=None, padding=None):
-        if image is not None:
-            self.image = image.copy()
+    def mask(self, image, bbox, blur=25, blur_type='gaussian', dilation=4, padding=4):
+        mask = np.zeros_like(image)
+        for (x, y, w, h) in bbox:
+            mask[y - padding:y + h + padding, x - padding:x + w + padding] = 255
 
-        if padding is None:
-            padding = self.padding
-
-        # Draw rectangles around the faces
-        for (x, y, w, h) in self.bbox:
-            cv2.rectangle(self.image, (x - padding, y - padding), (x + w + padding, y + h + padding), (255, 0, 0), 2)
-
-        return self.image
-
-    def mask(self, blur=25, blur_type='gaussian', dilation=4, padding: Optional[int] = None):
-        if self.bbox is None or self.image is None:
-            raise ValueError('Cascades or image not detected')
-
-        if padding is not None:
-            self.padding = padding
-
-        mask = self.image.copy()
-        mask.fill(0)
-
-        # Whiteout the detected faces on the mask
-        for (x, y, w, h) in self.bbox:
-            mask[y - self.padding:y + h + self.padding, x - self.padding:x + w + self.padding] = 255
-
-        if blur is not None and blur > 0:
+        if blur > 0:
             if blur_type == 'gaussian':
                 blur = blur if blur % 2 == 1 else blur + 1
                 dilation = dilation if dilation % 2 == 1 else dilation + 1
@@ -112,8 +88,6 @@ class Cascade:
                 mask = cv2.medianBlur(mask, blur)
             elif blur_type == 'box':
                 mask = cv2.blur(mask, (blur, blur))
-            else:
-                pass
 
         kernel = np.ones((dilation, dilation), np.uint8)
         mask_dilated = cv2.dilate(mask, kernel, iterations=1)
@@ -125,7 +99,6 @@ class Cascade:
         image_numpy = image.squeeze().cpu().numpy()
         image_bgr = image_numpy[:, :, [2, 1, 0]]
         image_bgr = (image_bgr * 255).astype(np.uint8)
-
         return image_bgr
 
     @staticmethod
@@ -133,29 +106,34 @@ class Cascade:
         image_rgb = cv2.cvtColor(image, code)
         image_rgb = image_rgb.astype(np.float32) / 255.0
         image_rgb = image_rgb[np.newaxis, :]
-        image_tensor = torch.from_numpy(image_rgb)
+        return torch.from_numpy(image_rgb)
 
-        return image_tensor
-
-    def __call__(
-        self,
-        image,
-        blur=25,
-        blur_type='gaussian',
-        cascade='frontalface_default',
-        dilation=4,
-        padding=50,
-        **kwargs
-    ):
-        if cascade != self.cascade:
+    def __call__(self, image, blur=25, blur_type='gaussian', cascade=None, dilation=4, padding=4, **kwargs):
+        if cascade is not None and cascade != self.cascade:
             self.load(cascade)
 
-        image = self.NHWC_to_CV2(image)
-        self.detect(image)
-        self.draw(image, padding)
-        mask = self.mask(blur, blur_type, dilation, padding)
+        if image.ndim == 3:
+            image = image.unsqueeze(0)
 
-        return self.CV2_to_NHWC(self.image), mask, self.bbox
+        images = []
+        masks = []
+        all_bboxes = []
+
+        for i in range(image.shape[0]):
+            img = image[i]
+            cv2_img = self.NHWC_to_CV2(img)
+            bbox = self.detect(cv2_img)
+            drawn = self.draw(cv2_img, bbox, padding)
+            mask = self.mask(cv2_img, bbox, blur, blur_type, dilation, padding)
+            final = self.CV2_to_NHWC(drawn)
+            images.append(final)
+            masks.append(mask)
+            all_bboxes.append(bbox.tolist() if len(bbox) > 0 else [])
+
+        images_tensor = torch.cat(images, dim=0)
+        masks_tensor = torch.cat(masks, dim=0)
+
+        return images_tensor, masks_tensor, all_bboxes
 
 
 NODE_CLASS_MAPPINGS = {"Cascade": Cascade}
