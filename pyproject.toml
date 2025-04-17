@@ -1,0 +1,14 @@
+[project]
+name = "shibikoai-comfyui-tools"
+description = "This is a collection of tools that I use to make my life easier when developing ComfyUI applications. It is a collection of tools that I have created to help me with my development process. I have decided to share these tools with the community in the hopes that they will be useful to others as well. I use this tools to further develop features for [a/https://shibiko.ai](https://shibiko.ai)"
+version = "1.0.0"
+license = "LICENSE"
+
+[project.urls]
+Repository = "https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ShibikoAI-ComfyUI-Tools"
+Icon = ""
