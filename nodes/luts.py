@@ -117,7 +117,7 @@ class LutsAdvanced:
         return {
             "required": {
                 "image": ("IMAGE",),
-                "lut_file": (folder_paths.get_filename_list("luts"), {"default": "Cinematic.cube"}),
+                "lut_file": (os.listdir(os.path.join(folder_paths.models_dir, "luts")), {"default": "Cinematic.cube"}),
                 "gamma_correction": ("BOOLEAN", {"default": True}),
                 "clip_values": ("BOOLEAN", {"default": True}),
                 "strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.1}),
