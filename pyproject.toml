@@ -9,6 +9,6 @@ Repository = "https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "shibiko"
 DisplayName = "ShibikoAI-ComfyUI-Tools"
 Icon = ""
