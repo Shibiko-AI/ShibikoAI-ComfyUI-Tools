@@ -46,7 +46,7 @@ class Waifu2x:
             keep_alpha=self.keep_alpha,
             amp=self.amp,
             trust_repo=True,
-        )
+        ).to('cuda')
         self.method = self.waifu2x_method(self.scale, self.noise_level)
         self.model.set_mode(method=self.method, noise_level=self.noise_level)
 
