@@ -3,6 +3,7 @@ import torch
 import folder_paths
 from rembg import remove, new_session
 from ..utils.convert import pil2tensor, tensor2pil
+from comfy.utils import ProgressBar
 
 
 class RemoveBackground:
@@ -105,7 +106,9 @@ class RemoveBackground:
             bgrgba[3] = 0
 
         batch_tensor = []
-        for image in images:
+        pbar = ProgressBar(len(images))
+        for idx, image in enumerate(images):
+            pbar.update_absolute(idx, len(images), f"Removing background from image {idx + 1}/{len(images)}")
             image = tensor2pil(image)
             batch_tensor.append(pil2tensor(
                 remove(
@@ -121,6 +124,7 @@ class RemoveBackground:
                     putalpha=putalpha,
                 )
                 .convert(('RGBA' if transparency else 'RGB'))))
+        pbar.update_absolute(len(images), len(images), "Complete")
         batch_tensor = torch.cat(batch_tensor, dim=0)
 
         return (batch_tensor,)
