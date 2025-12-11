@@ -7,7 +7,7 @@ This is a collection of tools that I use to make my life easier when developing 
 I put in credits for the original creators of the underlining tools that I use to create nodes. So links in each section are for each creator, repo, and patreon if they have one.
 
 ### Waifu2x
-This tool is a simple wrapper around the waifu2x command line tool. It allows you to upscale images and remove noise using the waifu2x ai model. It produces high quality upscaled images that are suitable for use in ComfyUI applications.
+This tool uses the waifu2x AI model directly to upscale images and remove noise. It produces high quality upscaled images that are suitable for use in ComfyUI applications.
 
 Credits: [Nagadomi](https://github.com/nagadomi) |
 [GitHub](https://github.com/nagadomi/nunif) |
@@ -28,3 +28,9 @@ Wrote this to include the opencv cascades that are built in. I also include a ca
 We can use this to detect faces, eyes, and anime faces without needing yolo. Yolo has an AGPL license, meaning you can't use it commerically unless you purchase a yearly license. Works well for characters and people that are facing towards the front. You can use this as an alternate way for inpainting or in combination with other masking techniques. A cascades directory is auto created in the models directory where you can add your own cascades.
 
 ![cascade-preview](https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools/assets/5192788/d1afccb5-3b35-4c4a-90aa-04e4849986d1)
+
+### Remove Noise
+Advanced noise removal node using bilateral and guided filters from OpenCV. Provides fine-grained control over filter parameters including loop iterations, filter diameter, sigma values, and processing order. Perfect for cleaning up images while preserving edge details.
+
+Credits: [toyxyz](https://github.com/toyxyz) |
+[GitHub](https://github.com/toyxyz/ComfyUI_toyxyz_test_nodes)
