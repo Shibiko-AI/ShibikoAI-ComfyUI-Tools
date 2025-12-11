@@ -4,6 +4,7 @@
 import numpy as np
 import torch
 import cv2
+from comfy.utils import ProgressBar
 
 MAX_RESOLUTION = 8192
 
@@ -64,9 +65,12 @@ class RemoveNoise:
 
         if len(image) > 1:
             tensors = []
-            for child in image:
+            pbar = ProgressBar(len(image))
+            for idx, child in enumerate(image):
+                pbar.update_absolute(idx, len(image), f"Removing noise from image {idx + 1}/{len(image)}")
                 tensor = sub(child)
                 tensors.append(tensor)
+            pbar.update_absolute(len(image), len(image), "Complete")
             return (torch.cat(tensors, dim=0),)
         else:
             tensor = sub(image)
