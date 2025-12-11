@@ -34,3 +34,21 @@ Advanced noise removal node using bilateral and guided filters from OpenCV. Prov
 
 Credits: [toyxyz](https://github.com/toyxyz) |
 [GitHub](https://github.com/toyxyz/ComfyUI_toyxyz_test_nodes)
+
+### LM Studio Vision
+Vision language model (VLM) controller for processing images and video frames through locally-hosted LM Studio models. Features integrated ComfyUI progress tracking that shows which image is being processed during batch operations. Supports multiple image inputs, automatic frame sampling for videos, and flexible model configuration with GPU offloading and context length controls.
+
+**Key Features:**
+- **Real-time Progress Tracking**: Integrated ComfyUI progress bar shows current processing status (e.g., "Processing image 3/8")
+- **Batch Processing**: Handles multiple images and video frames with automatic sampling
+- **Model Management**: Automatic model loading/unloading with caching optimization
+- **Flexible Input**: Supports up to 3 image inputs plus video frames
+- **Configurable Parameters**: GPU offload ratio, context length, max tokens, temperature, and more
+
+**Requirements:**
+- [LM Studio](https://lmstudio.ai/) installed and running
+- A vision-capable model loaded in LM Studio (e.g., LLaVA, Bakllava)
+
+Credits: Original implementation by [dandancow874](https://github.com/dandancow874) |
+[GitHub](https://github.com/dandancow874/ComfyUI-LMStudio-Controller) |
+Enhanced with progress tracking for Shibiko AI Tools
