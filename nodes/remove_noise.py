@@ -31,11 +31,11 @@ class RemoveNoise:
 
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
-    FUNCTION = "execute"
+    FUNCTION = "__call__"
     CATEGORY = "Shibiko AI"
 
-    def execute(self, image: torch.Tensor, bilateral_loop: int, d: int, sigma_color: int,
-                sigma_space: int, guided_loop: int, radius: int, eps: int, guided_first: bool):
+    def __call__(self, image: torch.Tensor, bilateral_loop: int, d: int, sigma_color: int,
+                 sigma_space: int, guided_loop: int, radius: int, eps: int, guided_first: bool):
 
         diameter = d
         if diameter % 2 == 0:
