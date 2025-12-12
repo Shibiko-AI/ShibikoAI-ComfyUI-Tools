@@ -244,7 +244,10 @@ class LMS_VisionController:
             LMS_VisionController._current_context != context_length
         )
 
+        logger.info(f"Model status - Current: {LMS_VisionController._current_loaded_model}, Requested: {model_name}, Needs reload: {needs_reload}")
+
         if needs_reload:
+            logger.info(f"Unloading all models and reloading {model_name}")
             self.cli.unload_all()
             time.sleep(1.0)
             success = self.cli.load_model(model_name, IDENTIFIER, gpu_ratio=gpu_offload, context_length=context_length)
@@ -252,9 +255,13 @@ class LMS_VisionController:
                 LMS_VisionController._current_loaded_model = model_name
                 LMS_VisionController._current_gpu_ratio = gpu_offload
                 LMS_VisionController._current_context = context_length
+                logger.info(f"Model {model_name} loaded successfully with identifier {IDENTIFIER}")
                 time.sleep(2.0)
             else:
+                logger.error(f"Failed to load model {model_name}")
                 return (f"Error: Failed to load model '{model_name}'.",)
+        else:
+            logger.info(f"Model {model_name} already loaded, skipping reload")
 
         pbar.update_absolute(len(final_tensors) + 1, total_steps)
 
@@ -293,8 +300,11 @@ class LMS_VisionController:
         pbar.update_absolute(total_steps, total_steps)
 
         if unload_after:
+            logger.info(f"unload_after=True, unloading model {model_name}")
             self.cli.unload_all()
             LMS_VisionController._current_loaded_model = None
+        else:
+            logger.info(f"unload_after=False, keeping model {model_name} loaded for next run")
 
         return (content,)
 
