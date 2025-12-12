@@ -123,7 +123,7 @@ class RemoveBackground:
                     putalpha=putalpha,
                 )
                 .convert(('RGBA' if transparency else 'RGB'))))
-            pbar.update_absolute(idx + 1, len(images), f"Removed background from {idx + 1}/{len(images)} images")
+            pbar.update_absolute(idx + 1, len(images))
         batch_tensor = torch.cat(batch_tensor, dim=0)
 
         return (batch_tensor,)

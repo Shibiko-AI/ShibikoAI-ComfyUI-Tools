@@ -229,7 +229,7 @@ class LMS_VisionController:
                     "type": "image_url",
                     "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
                 })
-            pbar.update_absolute(idx + 1, total_steps, f"Processed {idx + 1}/{len(final_tensors)} images")
+            pbar.update_absolute(idx + 1, total_steps)
 
         if not image_content_list:
             return ("Error: No valid images processed.",)
@@ -253,7 +253,7 @@ class LMS_VisionController:
             else:
                 return (f"Error: Failed to load model '{model_name}'.",)
 
-        pbar.update_absolute(len(final_tensors) + 1, total_steps, "Model loaded, generating response...")
+        pbar.update_absolute(len(final_tensors) + 1, total_steps)
 
         # Send API request with progress tracking
         user_content = [{"type": "text", "text": user_prompt}] + image_content_list
@@ -287,7 +287,7 @@ class LMS_VisionController:
             logger.error(content)
 
         # Complete progress
-        pbar.update_absolute(total_steps, total_steps, f"Complete - Generated {len(content)} characters")
+        pbar.update_absolute(total_steps, total_steps)
 
         if unload_after:
             self.cli.unload_all()

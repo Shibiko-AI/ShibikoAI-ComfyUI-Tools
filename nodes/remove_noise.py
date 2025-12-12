@@ -70,7 +70,7 @@ class RemoveNoise:
             for idx, child in enumerate(image):
                 tensor = sub(child)
                 tensors.append(tensor)
-                pbar.update_absolute(idx + 1, len(image), f"Removed noise from {idx + 1}/{len(image)} images")
+                pbar.update_absolute(idx + 1, len(image))
             return (torch.cat(tensors, dim=0),)
         else:
             tensor = sub(image)
