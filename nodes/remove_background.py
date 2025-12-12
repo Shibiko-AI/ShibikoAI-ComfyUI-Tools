@@ -108,7 +108,6 @@ class RemoveBackground:
         batch_tensor = []
         pbar = ProgressBar(len(images))
         for idx, image in enumerate(images):
-            pbar.update_absolute(idx, len(images), f"Removing background from image {idx + 1}/{len(images)}")
             image = tensor2pil(image)
             batch_tensor.append(pil2tensor(
                 remove(
@@ -124,7 +123,7 @@ class RemoveBackground:
                     putalpha=putalpha,
                 )
                 .convert(('RGBA' if transparency else 'RGB'))))
-        pbar.update_absolute(len(images), len(images), "Complete")
+            pbar.update_absolute(idx + 1, len(images), f"Removed background from {idx + 1}/{len(images)} images")
         batch_tensor = torch.cat(batch_tensor, dim=0)
 
         return (batch_tensor,)

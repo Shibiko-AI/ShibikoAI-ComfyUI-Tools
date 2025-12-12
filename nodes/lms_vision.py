@@ -223,19 +223,18 @@ class LMS_VisionController:
         # Convert to Base64 with progress tracking
         image_content_list = []
         for idx, tensor in enumerate(final_tensors):
-            pbar.update_absolute(idx, total_steps, f"Processing image {idx + 1}/{len(final_tensors)}")
             b64 = self.process_image(tensor, max_image_side)
             if b64:
                 image_content_list.append({
                     "type": "image_url",
                     "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
                 })
+            pbar.update_absolute(idx + 1, total_steps, f"Processed {idx + 1}/{len(final_tensors)} images")
 
         if not image_content_list:
             return ("Error: No valid images processed.",)
 
         # Load model with progress tracking
-        pbar.update_absolute(len(final_tensors), total_steps, "Loading model...")
         needs_reload = (
             LMS_VisionController._current_loaded_model != model_name or
             abs(LMS_VisionController._current_gpu_ratio - gpu_offload) > 0.01 or
@@ -254,8 +253,9 @@ class LMS_VisionController:
             else:
                 return (f"Error: Failed to load model '{model_name}'.",)
 
+        pbar.update_absolute(len(final_tensors) + 1, total_steps, "Model loaded, generating response...")
+
         # Send API request with progress tracking
-        pbar.update_absolute(len(final_tensors) + 1, total_steps, "Generating response...")
         user_content = [{"type": "text", "text": user_prompt}] + image_content_list
         payload = {
             "model": IDENTIFIER,
@@ -287,7 +287,7 @@ class LMS_VisionController:
             logger.error(content)
 
         # Complete progress
-        pbar.update_absolute(total_steps, total_steps, "Complete")
+        pbar.update_absolute(total_steps, total_steps, f"Complete - Generated {len(content)} characters")
 
         if unload_after:
             self.cli.unload_all()
