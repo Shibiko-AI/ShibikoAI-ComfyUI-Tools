@@ -30,6 +30,7 @@ class RemoveNoise:
         }
 
     RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "execute"
     CATEGORY = "Shibiko AI"
 
