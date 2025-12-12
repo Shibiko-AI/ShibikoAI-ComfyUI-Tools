@@ -153,7 +153,10 @@ class LMS_VisionController:
                 "video_frames": ("IMAGE",),
                 "system_prompt": ("STRING", {"multiline": True, "default": "You are a helpful AI assistant."}),
                 "base_url": ("STRING", {"default": "http://localhost:1234/v1"}),
-            }
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            },
         }
 
     RETURN_TYPES = ("STRING",)
@@ -182,7 +185,7 @@ class LMS_VisionController:
     def generate_content(self, user_prompt, model_name, max_total_images, gpu_offload, context_length, max_image_side,
                         max_tokens, temperature, seed, unload_after,
                         image=None, image_2=None, image_3=None, video_frames=None,
-                        system_prompt="", base_url="http://localhost:1234/v1", **kwargs):
+                        system_prompt="", base_url="http://localhost:1234/v1", unique_id=None, **kwargs):
 
         if "http" not in base_url:
             base_url = "http://localhost:1234/v1"
@@ -218,7 +221,7 @@ class LMS_VisionController:
 
         # Initialize progress bar - total steps: image processing + model loading + API request
         total_steps = len(final_tensors) + 2  # images + load model + API request
-        pbar = ProgressBar(total_steps)
+        pbar = ProgressBar(total_steps, node_id=unique_id)
 
         # Convert to Base64 with progress tracking
         image_content_list = []

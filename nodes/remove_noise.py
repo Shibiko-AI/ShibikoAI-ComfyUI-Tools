@@ -27,6 +27,9 @@ class RemoveNoise:
                 "radius": ("INT", {"default": 4, "min": 0, "max": MAX_RESOLUTION, "step": 1}),
                 "eps": ("INT", {"default": 16, "min": 0, "max": MAX_RESOLUTION, "step": 1}),
             },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            },
         }
 
     RETURN_TYPES = ("IMAGE",)
@@ -35,7 +38,7 @@ class RemoveNoise:
     CATEGORY = "Shibiko AI"
 
     def __call__(self, image: torch.Tensor, bilateral_loop: int, d: int, sigma_color: int,
-                 sigma_space: int, guided_loop: int, radius: int, eps: int, guided_first: bool):
+                 sigma_space: int, guided_loop: int, radius: int, eps: int, guided_first: bool, unique_id=None):
 
         diameter = d
         if diameter % 2 == 0:
@@ -66,7 +69,7 @@ class RemoveNoise:
 
         if len(image) > 1:
             tensors = []
-            pbar = ProgressBar(len(image))
+            pbar = ProgressBar(len(image), node_id=unique_id)
             for idx, child in enumerate(image):
                 tensor = sub(child)
                 tensors.append(tensor)

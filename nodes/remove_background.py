@@ -26,6 +26,9 @@ class RemoveBackground:
                 "background_color": (["none", "black", "white", "magenta", "chroma green", "chroma blue"],),
                 "putalpha": ("BOOLEAN", {"default": False},),
             },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
+            },
         }
 
     CATEGORY = "Shibiko AI"
@@ -77,6 +80,7 @@ class RemoveBackground:
         only_mask=False,
         background_color="none",
         putalpha=False,
+        unique_id=None,
         **kwargs
     ):
         # ComfyUI will allow strings in place of booleans, validate the input.
@@ -106,7 +110,7 @@ class RemoveBackground:
             bgrgba[3] = 0
 
         batch_tensor = []
-        pbar = ProgressBar(len(images))
+        pbar = ProgressBar(len(images), node_id=unique_id)
         for idx, image in enumerate(images):
             image = tensor2pil(image)
             batch_tensor.append(pil2tensor(
