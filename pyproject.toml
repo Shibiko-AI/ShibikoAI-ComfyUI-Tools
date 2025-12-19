@@ -11,4 +11,4 @@ Repository = "https://github.com/Shibiko-AI/ShibikoAI-ComfyUI-Tools"
 [tool.comfy]
 PublisherId = "shibiko"
 DisplayName = "ShibikoAI-ComfyUI-Tools"
-Icon = ""
+Icon = "https://backend.shibiko.ai/profile/shibiko-profile.png"
